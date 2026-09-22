@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Color Crush</title>
+	<style>
+		:root {
+			--ink: #172326;
+			--muted: #6b7772;
+			--paper: #f5f1e9;
+			--line: #dcd7cc;
+			--accent: #ff694a;
+			--shadow: 0 24px 70px rgba(50, 45, 34, .14);
+		}
+
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			min-width: 320px;
+			min-height: 100vh;
+			color: var(--ink);
+			background:
+				radial-gradient(circle at 82% 11%, rgba(255, 198, 99, .38), transparent 25rem),
+				radial-gradient(circle at 8% 88%, rgba(129, 209, 193, .3), transparent 24rem),
+				var(--paper);
+			font-family: Georgia, 'Times New Roman', serif;
+		}
+
+		button { font: inherit; }
+		.shell { width: min(100% - 36px, 920px); margin: 0 auto; padding: 28px 0 36px; }
+		header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+		.eyebrow { margin: 0 0 7px; color: var(--accent); font: 700 11px/1.2 Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+		h1 { margin: 0; font-size: clamp(38px, 8vw, 72px); line-height: .9; letter-spacing: -.06em; }
+		.intro { max-width: 300px; margin: 6px 0 0; color: var(--muted); font: 14px/1.45 Arial, sans-serif; }
+		.scoreboard { display: flex; gap: 20px; padding-top: 4px; text-align: right; }
+		.stat-label { display: block; color: var(--muted); font: 10px/1.2 Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+		.stat-value { display: block; margin-top: 3px; font: 700 25px/1 Arial, sans-serif; }
+
+		main { margin-top: 38px; }
+		.round-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font: 700 11px/1.2 Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+		.round-meta span:last-child { color: var(--muted); }
+		.progress { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 14px; }
+		.progress i { height: 5px; border-radius: 20px; background: #ded9ce; transition: background .3s ease; }
+		.progress i.done { background: var(--accent); }
+
+		.arena { position: relative; display: grid; place-items: center; min-height: 430px; padding: 32px; overflow: hidden; border: 1px solid rgba(23, 35, 38, .1); border-radius: 14px; background: rgba(255, 253, 248, .72); box-shadow: var(--shadow); }
+		.arena::before, .arena::after { position: absolute; width: 90px; height: 90px; border: 1px solid rgba(23, 35, 38, .12); border-radius: 50%; content: ''; }
+		.arena::before { top: -35px; left: 12%; }
+		.arena::after { right: 9%; bottom: -50px; width: 130px; height: 130px; }
+		.color-card { position: relative; z-index: 1; display: grid; place-items: center; width: min(62vw, 310px); aspect-ratio: 1; border: 11px solid rgba(255, 255, 255, .72); border-radius: 50%; box-shadow: 0 20px 35px rgba(23, 35, 38, .2), inset 0 0 0 1px rgba(0,0,0,.07); cursor: grab; touch-action: none; user-select: none; transition: transform .18s ease, box-shadow .18s ease; }
+		.color-card:active { cursor: grabbing; }
+		.color-card span { color: rgba(255, 255, 255, .94); font: 700 clamp(18px, 4vw, 28px)/1 Arial, sans-serif; letter-spacing: .09em; text-transform: uppercase; text-shadow: 0 2px 9px rgba(0,0,0,.18); }
+		.hint { position: absolute; bottom: 22px; left: 0; right: 0; color: var(--muted); font: 12px Arial, sans-serif; text-align: center; }
+		.hint strong { color: var(--ink); }
+
+		.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+		.action { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 56px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 253, 248, .72); color: var(--ink); cursor: pointer; font: 700 13px Arial, sans-serif; letter-spacing: .04em; transition: transform .15s ease, border-color .15s ease, background .15s ease; }
+		.action:hover { transform: translateY(-2px); border-color: var(--ink); }
+		.action span { font-size: 21px; }
+		.action.smash { border-color: var(--accent); background: var(--accent); color: #fff; }
+		.action.smash:hover { background: #ee5639; }
+
+		.result { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 24px; background: rgba(245, 241, 233, .94); text-align: center; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+		.result.show { opacity: 1; pointer-events: auto; }
+		.result h2 { margin: 0 0 8px; font-size: clamp(36px, 7vw, 58px); letter-spacing: -.05em; }
+		.result p { margin: 0 0 22px; color: var(--muted); font: 14px Arial, sans-serif; }
+		.restart { border: 0; border-radius: 6px; padding: 14px 24px; background: var(--ink); color: #fff; cursor: pointer; font: 700 12px Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+		.pop { animation: pop .42s ease; }
+		.wrong { animation: shake .35s ease; }
+		@keyframes pop { 50% { transform: scale(1.06); } }
+		@keyframes shake { 25% { transform: translateX(-12px); } 75% { transform: translateX(12px); } }
+		@media (max-width: 570px) { .shell { width: min(100% - 24px, 920px); padding-top: 20px; } header { display: block; } .scoreboard { justify-content: flex-start; margin-top: 20px; text-align: left; } main { margin-top: 28px; } .arena { min-height: 390px; padding: 20px; } .hint { bottom: 16px; } }
+	</style>
+</head>
+<body>
+	<div class="shell">
+		<header>
+			<div>
+				<p class="eyebrow">A tiny reflex game</p>
+				<h1>Color Crush</h1>
+				<p class="intro">Trust your instincts. Swipe left to pass. Swipe right to smash.</p>
+			</div>
+			<div class="scoreboard" aria-label="Game score">
+				<div><span class="stat-label">Score</span><strong class="stat-value" id="score">0</strong></div>
+				<div><span class="stat-label">Streak</span><strong class="stat-value" id="streak">0</strong></div>
+			</div>
+		</header>
+
+		<main>
+			<div class="round-meta"><span>Color <b id="round">1</b> of 10</span><span id="feedback" aria-live="polite">Make a move</span></div>
+			<div class="progress" id="progress" aria-label="Round progress"></div>
+			<section class="arena" aria-label="Color arena">
+				<div class="color-card" id="colorCard" role="button" tabindex="0" aria-label="Current color. Swipe left to pass or right to smash."><span id="colorName">Coral</span></div>
+				<div class="hint"><strong>← pass</strong>&nbsp;&nbsp; drag the color &nbsp;&nbsp;<strong>smash →</strong></div>
+				<div class="result" id="result" aria-live="polite">
+					<div><h2>Run complete.</h2><p id="finalScore">You scored 0 points.</p><button class="restart" id="restart">Play again</button></div>
+				</div>
+			</section>
+			<div class="actions"><button class="action" id="pass"><span>←</span> PASS</button><button class="action smash" id="smash">SMASH <span>→</span></button></div>
+		</main>
+	</div>
+
+	<script>
+		const colors = [
+			['Coral', '#f26b5b'], ['Lemon', '#f2c94c'], ['Mint', '#67c7ad'], ['Cobalt', '#4c72d9'], ['Tangerine', '#ee884d'],
+			['Lilac', '#a88ed8'], ['Ocean', '#46aeb9'], ['Rose', '#e9799b'], ['Moss', '#91a84d'], ['Ink', '#34444b']
+		];
+		const card = document.querySelector('#colorCard');
+		const colorName = document.querySelector('#colorName');
+		const roundLabel = document.querySelector('#round');
+		const scoreLabel = document.querySelector('#score');
+		const streakLabel = document.querySelector('#streak');
+		const feedback = document.querySelector('#feedback');
+		const progress = document.querySelector('#progress');
+		const result = document.querySelector('#result');
+		const finalScore = document.querySelector('#finalScore');
+		let round = 0;
+		let score = 0;
+		let streak = 0;
+		let startX = 0;
+
+		function buildProgress() {
+			progress.innerHTML = colors.map((_, index) => `<i class="${index < round ? 'done' : ''}"></i>`).join('');
+		}
+
+		function showColor() {
+			const [name, hex] = colors[round];
+			colorName.textContent = name;
+			card.style.background = hex;
+			card.setAttribute('aria-label', `${name}. Swipe left to pass or right to smash.`);
+			roundLabel.textContent = round + 1;
+			buildProgress();
+		}
+
+		function move(direction) {
+			if (round >= colors.length) return;
+			const smashed = direction === 'right';
+			score += smashed ? 100 + streak * 25 : 0;
+			streak = smashed ? streak + 1 : 0;
+			scoreLabel.textContent = score;
+			streakLabel.textContent = streak;
+			feedback.textContent = smashed ? 'Smashed!' : 'Passed';
+			card.classList.remove('pop', 'wrong');
+			void card.offsetWidth;
+			card.classList.add(smashed ? 'pop' : 'wrong');
+			round += 1;
+			if (round === colors.length) {
+				buildProgress();
+				finalScore.textContent = `You scored ${score} points${score > 0 ? ` with a ${streak}-color streak.` : '.'}`;
+				setTimeout(() => result.classList.add('show'), 260);
+			} else {
+				setTimeout(showColor, 170);
+			}
+		}
+
+		card.addEventListener('pointerdown', (event) => { startX = event.clientX; card.setPointerCapture(event.pointerId); });
+		card.addEventListener('pointerup', (event) => {
+			const distance = event.clientX - startX;
+			if (Math.abs(distance) > 35) move(distance > 0 ? 'right' : 'left');
+		});
+		document.querySelector('#pass').addEventListener('click', () => move('left'));
+		document.querySelector('#smash').addEventListener('click', () => move('right'));
+		card.addEventListener('keydown', (event) => { if (event.key === 'ArrowLeft') move('left'); if (event.key === 'ArrowRight') move('right'); });
+		document.querySelector('#restart').addEventListener('click', () => { round = 0; score = 0; streak = 0; scoreLabel.textContent = '0'; streakLabel.textContent = '0'; feedback.textContent = 'Make a move'; result.classList.remove('show'); showColor(); });
+		showColor();
+	</script>
+</body>
+</html>
