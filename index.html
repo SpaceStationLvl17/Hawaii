@@ -2,168 +2,427 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-	<title>Color Crush</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#142523">
+	<title>Updraft — Keep it going</title>
 	<style>
 		:root {
-			--ink: #172326;
-			--muted: #6b7772;
-			--paper: #f5f1e9;
-			--line: #dcd7cc;
-			--accent: #ff694a;
-			--shadow: 0 24px 70px rgba(50, 45, 34, .14);
+			color-scheme: light;
+			--ink: #142523;
+			--muted: #75817a;
+			--paper: #f4f3e9;
+			--lime: #d3f36b;
+			--coral: #ff8064;
+			--teal: #83e4cf;
 		}
 
 		* { box-sizing: border-box; }
+
 		body {
-			margin: 0;
-			min-width: 320px;
 			min-height: 100vh;
+			margin: 0;
+			padding: 28px 20px 24px;
+			background-color: var(--paper);
+			background-image: radial-gradient(#14252312 0.8px, transparent 0.8px);
+			background-size: 16px 16px;
 			color: var(--ink);
-			background:
-				radial-gradient(circle at 82% 11%, rgba(255, 198, 99, .38), transparent 25rem),
-				radial-gradient(circle at 8% 88%, rgba(129, 209, 193, .3), transparent 24rem),
-				var(--paper);
-			font-family: Georgia, 'Times New Roman', serif;
+			font-family: "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
 		}
 
-		button { font: inherit; }
-		.shell { width: min(100% - 36px, 920px); margin: 0 auto; padding: 28px 0 36px; }
-		header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-		.eyebrow { margin: 0 0 7px; color: var(--accent); font: 700 11px/1.2 Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
-		h1 { margin: 0; font-size: clamp(38px, 8vw, 72px); line-height: .9; letter-spacing: -.06em; }
-		.intro { max-width: 300px; margin: 6px 0 0; color: var(--muted); font: 14px/1.45 Arial, sans-serif; }
-		.scoreboard { display: flex; gap: 20px; padding-top: 4px; text-align: right; }
-		.stat-label { display: block; color: var(--muted); font: 10px/1.2 Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-		.stat-value { display: block; margin-top: 3px; font: 700 25px/1 Arial, sans-serif; }
+		.game {
+			width: min(100%, 760px);
+			margin: 0 auto;
+		}
 
-		main { margin-top: 38px; }
-		.round-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font: 700 11px/1.2 Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
-		.round-meta span:last-child { color: var(--muted); }
-		.progress { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 14px; }
-		.progress i { height: 5px; border-radius: 20px; background: #ded9ce; transition: background .3s ease; }
-		.progress i.done { background: var(--accent); }
+		.topline, .brand, .scoreboard, .score, .actions, .bottomline {
+			display: flex;
+			align-items: center;
+		}
 
-		.arena { position: relative; display: grid; place-items: center; min-height: 430px; padding: 32px; overflow: hidden; border: 1px solid rgba(23, 35, 38, .1); border-radius: 14px; background: rgba(255, 253, 248, .72); box-shadow: var(--shadow); }
-		.arena::before, .arena::after { position: absolute; width: 90px; height: 90px; border: 1px solid rgba(23, 35, 38, .12); border-radius: 50%; content: ''; }
-		.arena::before { top: -35px; left: 12%; }
-		.arena::after { right: 9%; bottom: -50px; width: 130px; height: 130px; }
-		.color-card { position: relative; z-index: 1; display: grid; place-items: center; width: min(62vw, 310px); aspect-ratio: 1; border: 11px solid rgba(255, 255, 255, .72); border-radius: 50%; box-shadow: 0 20px 35px rgba(23, 35, 38, .2), inset 0 0 0 1px rgba(0,0,0,.07); cursor: grab; touch-action: none; user-select: none; transition: transform .18s ease, box-shadow .18s ease; }
-		.color-card:active { cursor: grabbing; }
-		.color-card span { color: rgba(255, 255, 255, .94); font: 700 clamp(18px, 4vw, 28px)/1 Arial, sans-serif; letter-spacing: .09em; text-transform: uppercase; text-shadow: 0 2px 9px rgba(0,0,0,.18); }
-		.hint { position: absolute; bottom: 22px; left: 0; right: 0; color: var(--muted); font: 12px Arial, sans-serif; text-align: center; }
-		.hint strong { color: var(--ink); }
+		.topline, .bottomline { justify-content: space-between; }
+		.brand { gap: 10px; }
 
-		.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-		.action { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 56px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 253, 248, .72); color: var(--ink); cursor: pointer; font: 700 13px Arial, sans-serif; letter-spacing: .04em; transition: transform .15s ease, border-color .15s ease, background .15s ease; }
-		.action:hover { transform: translateY(-2px); border-color: var(--ink); }
-		.action span { font-size: 21px; }
-		.action.smash { border-color: var(--accent); background: var(--accent); color: #fff; }
-		.action.smash:hover { background: #ee5639; }
+		.mark {
+			display: grid;
+			width: 34px;
+			height: 34px;
+			place-items: center;
+			border-radius: 50%;
+			background: var(--coral);
+			color: var(--ink);
+			font-size: 19px;
+			font-weight: 900;
+			transform: rotate(-10deg);
+		}
 
-		.result { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 24px; background: rgba(245, 241, 233, .94); text-align: center; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-		.result.show { opacity: 1; pointer-events: auto; }
-		.result h2 { margin: 0 0 8px; font-size: clamp(36px, 7vw, 58px); letter-spacing: -.05em; }
-		.result p { margin: 0 0 22px; color: var(--muted); font: 14px Arial, sans-serif; }
-		.restart { border: 0; border-radius: 6px; padding: 14px 24px; background: var(--ink); color: #fff; cursor: pointer; font: 700 12px Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
-		.pop { animation: pop .42s ease; }
-		.wrong { animation: shake .35s ease; }
-		@keyframes pop { 50% { transform: scale(1.06); } }
-		@keyframes shake { 25% { transform: translateX(-12px); } 75% { transform: translateX(12px); } }
-		@media (max-width: 570px) { .shell { width: min(100% - 24px, 920px); padding-top: 20px; } header { display: block; } .scoreboard { justify-content: flex-start; margin-top: 20px; text-align: left; } main { margin-top: 28px; } .arena { min-height: 390px; padding: 20px; } .hint { bottom: 16px; } }
+		.wordmark {
+			font-size: 14px;
+			font-weight: 900;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		.edition {
+			color: var(--muted);
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+		}
+
+		h1 {
+			margin: 28px 0 5px;
+			font-size: clamp(34px, 7vw, 54px);
+			line-height: 0.98;
+			letter-spacing: -0.045em;
+		}
+
+		.subtitle {
+			margin: 0 0 24px;
+			color: #53625c;
+			font-size: 14px;
+		}
+
+		.scoreboard {
+			min-height: 76px;
+			justify-content: space-between;
+			gap: 18px;
+			padding: 12px 2px 16px;
+		}
+
+		.score { gap: 13px; }
+
+		.score-value {
+			min-width: 88px;
+			font-size: 42px;
+			font-weight: 900;
+			line-height: 1;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.score-label, .best-label {
+			color: var(--muted);
+			font-size: 10px;
+			font-weight: 800;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+		}
+
+		.best {
+			padding-left: 16px;
+			border-left: 1px solid #14252320;
+		}
+
+		.best-value {
+			display: block;
+			margin-top: 4px;
+			font-size: 17px;
+			font-weight: 900;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.actions { gap: 8px; }
+
+		button {
+			min-height: 40px;
+			padding: 0 14px;
+			border: 1.5px solid var(--ink);
+			border-radius: 4px;
+			background: var(--paper);
+			color: var(--ink);
+			cursor: pointer;
+			font: inherit;
+			font-size: 12px;
+			font-weight: 900;
+			transition: transform 120ms ease, background 120ms ease;
+		}
+
+		button:hover { transform: translateY(-2px); }
+		button:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+		button.primary { background: var(--lime); }
+
+		.board {
+			position: relative;
+			overflow: hidden;
+			width: 100%;
+			aspect-ratio: 1.46;
+			min-height: 250px;
+			border: 2px solid var(--ink);
+			border-radius: 5px;
+			background: #17332e;
+			box-shadow: 6px 6px 0 var(--ink);
+			touch-action: none;
+		}
+
+		canvas { display: block; width: 100%; height: 100%; }
+
+		.bottomline {
+			gap: 12px;
+			padding: 17px 2px 0;
+			color: #53625c;
+			font-size: 11px;
+		}
+
+		.keys { display: flex; align-items: center; gap: 5px; }
+
+		kbd {
+			display: inline-grid;
+			min-width: 22px;
+			height: 22px;
+			padding: 0 5px;
+			place-items: center;
+			border: 1px solid #14252340;
+			border-radius: 3px;
+			background: #fffdf5;
+			color: var(--ink);
+			font-family: inherit;
+			font-size: 10px;
+			font-weight: 700;
+		}
+
+		@media (max-width: 500px) {
+			body { padding: 20px 15px; }
+			.edition { font-size: 9px; }
+			h1 { margin-top: 24px; }
+			.scoreboard { gap: 8px; }
+			.score { gap: 8px; }
+			.score-value { min-width: 66px; font-size: 34px; }
+			.best { padding-left: 10px; }
+			.actions { gap: 5px; }
+			button { min-height: 38px; padding: 0 9px; font-size: 11px; }
+			.bottomline { align-items: flex-start; font-size: 10px; }
+			.keys { flex-wrap: wrap; justify-content: flex-end; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+		}
 	</style>
 </head>
 <body>
-	<div class="shell">
-		<header>
-			<div>
-				<p class="eyebrow">A tiny reflex game</p>
-				<h1>Color Crush</h1>
-				<p class="intro">Trust your instincts. Swipe left to pass. Swipe right to smash.</p>
-			</div>
-			<div class="scoreboard" aria-label="Game score">
-				<div><span class="stat-label">Score</span><strong class="stat-value" id="score">0</strong></div>
-				<div><span class="stat-label">Streak</span><strong class="stat-value" id="streak">0</strong></div>
-			</div>
+	<main class="game">
+		<header class="topline">
+			<div class="brand"><span class="mark" aria-hidden="true">↑</span><span class="wordmark">Updraft</span></div>
+			<span class="edition">A tiny keep-it-up game</span>
 		</header>
 
-		<main>
-			<div class="round-meta"><span>Color <b id="round">1</b> of 10</span><span id="feedback" aria-live="polite">Make a move</span></div>
-			<div class="progress" id="progress" aria-label="Round progress"></div>
-			<section class="arena" aria-label="Color arena">
-				<div class="color-card" id="colorCard" role="button" tabindex="0" aria-label="Current color. Swipe left to pass or right to smash."><span id="colorName">Coral</span></div>
-				<div class="hint"><strong>← pass</strong>&nbsp;&nbsp; drag the color &nbsp;&nbsp;<strong>smash →</strong></div>
-				<div class="result" id="result" aria-live="polite">
-					<div><h2>Run complete.</h2><p id="finalScore">You scored 0 points.</p><button class="restart" id="restart">Play again</button></div>
-				</div>
-			</section>
-			<div class="actions"><button class="action" id="pass"><span>←</span> PASS</button><button class="action smash" id="smash">SMASH <span>→</span></button></div>
-		</main>
-	</div>
+		<h1>Keep it<br>in the air.</h1>
+		<p class="subtitle">A little paddle. A very bouncy ball. How long can you last?</p>
+
+		<section class="scoreboard" aria-label="Game score">
+			<div class="score">
+				<span class="score-value" id="score">0</span>
+				<span class="score-label">points</span>
+			</div>
+			<div class="best">
+				<span class="best-label">Personal best</span>
+				<span class="best-value" id="best">0</span>
+			</div>
+			<div class="actions">
+				<button class="primary" id="play" type="button">Start</button>
+				<button id="reset" type="button" aria-label="Reset game">Reset</button>
+			</div>
+		</section>
+
+		<div class="board" id="board">
+			<canvas id="field" aria-label="Game area. Move the paddle to bounce the ball."></canvas>
+		</div>
+
+		<footer class="bottomline">
+			<span id="status" aria-live="polite">Press Start to serve.</span>
+			<span class="keys" aria-label="Controls">
+				<span>Move</span><kbd>←</kbd><kbd>→</kbd><span>or</span><kbd>A</kbd><kbd>D</kbd><span>·</span><span>Mouse / touch</span>
+			</span>
+		</footer>
+	</main>
 
 	<script>
-		const colors = [
-			['Coral', '#f26b5b'], ['Lemon', '#f2c94c'], ['Mint', '#67c7ad'], ['Cobalt', '#4c72d9'], ['Tangerine', '#ee884d'],
-			['Lilac', '#a88ed8'], ['Ocean', '#46aeb9'], ['Rose', '#e9799b'], ['Moss', '#91a84d'], ['Ink', '#34444b']
-		];
-		const card = document.querySelector('#colorCard');
-		const colorName = document.querySelector('#colorName');
-		const roundLabel = document.querySelector('#round');
-		const scoreLabel = document.querySelector('#score');
-		const streakLabel = document.querySelector('#streak');
-		const feedback = document.querySelector('#feedback');
-		const progress = document.querySelector('#progress');
-		const result = document.querySelector('#result');
-		const finalScore = document.querySelector('#finalScore');
-		let round = 0;
+		const canvas = document.querySelector("#field");
+		const board = document.querySelector("#board");
+		const context = canvas.getContext("2d");
+		const scoreText = document.querySelector("#score");
+		const bestText = document.querySelector("#best");
+		const statusText = document.querySelector("#status");
+		const playButton = document.querySelector("#play");
+		const paddle = { x: 0, width: 104, height: 12, y: 0, speed: 8 };
+		const ball = { x: 0, y: 0, radius: 9, vx: 0, vy: 0 };
+		const keys = new Set();
+		let width = 0;
+		let height = 0;
+		let state = "ready";
+		let startedAt = 0;
 		let score = 0;
-		let streak = 0;
-		let startX = 0;
+		let best = Number(localStorage.getItem("updraft-best") || 0);
+		let previousFrame = 0;
 
-		function buildProgress() {
-			progress.innerHTML = colors.map((_, index) => `<i class="${index < round ? 'done' : ''}"></i>`).join('');
+		bestText.textContent = best;
+
+		function resize() {
+			const bounds = board.getBoundingClientRect();
+			const pixelRatio = window.devicePixelRatio || 1;
+			width = bounds.width;
+			height = bounds.height;
+			canvas.width = Math.round(width * pixelRatio);
+			canvas.height = Math.round(height * pixelRatio);
+			context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+			paddle.width = Math.min(104, width * 0.24);
+			paddle.y = height - 34;
+			paddle.x = Math.max(paddle.width / 2, Math.min(width - paddle.width / 2, paddle.x || width / 2));
+			if (state !== "running") {
+				ball.x = width / 2;
+				ball.y = height * 0.47;
+			}
+			draw();
 		}
 
-		function showColor() {
-			const [name, hex] = colors[round];
-			colorName.textContent = name;
-			card.style.background = hex;
-			card.setAttribute('aria-label', `${name}. Swipe left to pass or right to smash.`);
-			roundLabel.textContent = round + 1;
-			buildProgress();
-		}
+		function draw() {
+			context.clearRect(0, 0, width, height);
+			context.fillStyle = "#17332e";
+			context.fillRect(0, 0, width, height);
 
-		function move(direction) {
-			if (round >= colors.length) return;
-			const smashed = direction === 'right';
-			score += smashed ? 100 + streak * 25 : 0;
-			streak = smashed ? streak + 1 : 0;
-			scoreLabel.textContent = score;
-			streakLabel.textContent = streak;
-			feedback.textContent = smashed ? 'Smashed!' : 'Passed';
-			card.classList.remove('pop', 'wrong');
-			void card.offsetWidth;
-			card.classList.add(smashed ? 'pop' : 'wrong');
-			round += 1;
-			if (round === colors.length) {
-				buildProgress();
-				finalScore.textContent = `You scored ${score} points${score > 0 ? ` with a ${streak}-color streak.` : '.'}`;
-				setTimeout(() => result.classList.add('show'), 260);
-			} else {
-				setTimeout(showColor, 170);
+			context.save();
+			context.strokeStyle = "#ffffff12";
+			context.lineWidth = 1;
+			context.setLineDash([3, 8]);
+			context.beginPath();
+			context.moveTo(18, 20);
+			context.lineTo(width - 18, 20);
+			context.stroke();
+			context.restore();
+
+			context.fillStyle = "#83e4cf";
+			context.beginPath();
+			context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+			context.fill();
+			context.fillStyle = "#d3f36b";
+			context.beginPath();
+			context.roundRect(paddle.x - paddle.width / 2, paddle.y, paddle.width, paddle.height, 6);
+			context.fill();
+
+			if (state !== "running") {
+				const title = state === "over" ? "NICE RUN" : state === "paused" ? "PAUSED" : "READY?";
+				const hint = state === "over" ? `YOU SCORED ${score}` : state === "paused" ? "PRESS SPACE TO CONTINUE" : "PRESS START OR SPACE TO SERVE";
+				context.textAlign = "center";
+				context.fillStyle = "#f4f3e9";
+				context.font = "800 12px Trebuchet MS, sans-serif";
+				context.fillText(title, width / 2, height * 0.35);
+				context.fillStyle = "#83e4cf";
+				context.font = "700 10px Trebuchet MS, sans-serif";
+				context.fillText(hint, width / 2, height * 0.35 + 19);
 			}
 		}
 
-		card.addEventListener('pointerdown', (event) => { startX = event.clientX; card.setPointerCapture(event.pointerId); });
-		card.addEventListener('pointerup', (event) => {
-			const distance = event.clientX - startX;
-			if (Math.abs(distance) > 35) move(distance > 0 ? 'right' : 'left');
+		function begin() {
+			if (state === "running") return;
+			if (state !== "paused") {
+				score = 0;
+				scoreText.textContent = score;
+				ball.x = width / 2;
+				ball.y = height * 0.47;
+				const direction = Math.random() < 0.5 ? -1 : 1;
+				ball.vx = direction * 3.2;
+				ball.vy = 4.2;
+				startedAt = performance.now();
+			} else {
+				startedAt = performance.now() - score * 100;
+			}
+			state = "running";
+			playButton.textContent = "Pause";
+			statusText.textContent = "Keep it up!";
+		}
+
+		function end() {
+			state = "over";
+			score = Math.floor((performance.now() - startedAt) / 100);
+			scoreText.textContent = score;
+			if (score > best) {
+				best = score;
+				bestText.textContent = best;
+				localStorage.setItem("updraft-best", best);
+				statusText.textContent = "New personal best. One more?";
+			} else {
+				statusText.textContent = "Ball down. Give it another go?";
+			}
+			playButton.textContent = "Play again";
+		}
+
+		function reset() {
+			state = "ready";
+			score = 0;
+			scoreText.textContent = score;
+			playButton.textContent = "Start";
+			statusText.textContent = "Press Start to serve.";
+			ball.x = width / 2;
+			ball.y = height * 0.47;
+			draw();
+		}
+
+		function movePaddle(clientX) {
+			const bounds = board.getBoundingClientRect();
+			paddle.x = Math.max(paddle.width / 2, Math.min(width - paddle.width / 2, clientX - bounds.left));
+			if (state !== "running") draw();
+		}
+
+		function frame(now) {
+			const step = Math.min((now - (previousFrame || now)) / 16.67, 2);
+			previousFrame = now;
+			if (state === "running") {
+				if (keys.has("ArrowLeft") || keys.has("a")) paddle.x -= paddle.speed * step;
+				if (keys.has("ArrowRight") || keys.has("d")) paddle.x += paddle.speed * step;
+				paddle.x = Math.max(paddle.width / 2, Math.min(width - paddle.width / 2, paddle.x));
+				ball.x += ball.vx * step;
+				ball.y += ball.vy * step;
+
+				if (ball.x - ball.radius < 0 || ball.x + ball.radius > width) {
+					ball.vx *= -1;
+					ball.x = Math.max(ball.radius, Math.min(width - ball.radius, ball.x));
+				}
+				if (ball.y - ball.radius < 0) {
+					ball.vy = Math.abs(ball.vy);
+					ball.y = ball.radius;
+				}
+				const hitsPaddle = ball.vy > 0 && ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height && Math.abs(ball.x - paddle.x) <= paddle.width / 2 + ball.radius;
+				if (hitsPaddle) {
+					const offset = (ball.x - paddle.x) / (paddle.width / 2);
+					ball.vy = -Math.max(4.2, Math.abs(ball.vy));
+					ball.vx = Math.max(-6, Math.min(6, ball.vx + offset * 2.4));
+					ball.y = paddle.y - ball.radius;
+				}
+				if (ball.y - ball.radius > height) end();
+				else {
+					score = Math.floor((now - startedAt) / 100);
+					scoreText.textContent = score;
+				}
+			}
+			draw();
+			requestAnimationFrame(frame);
+		}
+
+		playButton.addEventListener("click", () => {
+			if (state === "running") {
+				state = "paused";
+				playButton.textContent = "Resume";
+				statusText.textContent = "Take a breather.";
+				draw();
+			} else begin();
 		});
-		document.querySelector('#pass').addEventListener('click', () => move('left'));
-		document.querySelector('#smash').addEventListener('click', () => move('right'));
-		card.addEventListener('keydown', (event) => { if (event.key === 'ArrowLeft') move('left'); if (event.key === 'ArrowRight') move('right'); });
-		document.querySelector('#restart').addEventListener('click', () => { round = 0; score = 0; streak = 0; scoreLabel.textContent = '0'; streakLabel.textContent = '0'; feedback.textContent = 'Make a move'; result.classList.remove('show'); showColor(); });
-		showColor();
+		document.querySelector("#reset").addEventListener("click", reset);
+		board.addEventListener("pointermove", event => movePaddle(event.clientX));
+		board.addEventListener("pointerdown", event => {
+			movePaddle(event.clientX);
+			if (state === "ready" || state === "over") begin();
+		});
+		window.addEventListener("keydown", event => {
+			const key = event.key.toLowerCase();
+			if (["arrowleft", "arrowright", " "].includes(key)) event.preventDefault();
+			keys.add(key);
+			if (key === " " && state !== "running") begin();
+		});
+		window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+		window.addEventListener("blur", () => keys.clear());
+		window.addEventListener("resize", resize);
+		resize();
+		requestAnimationFrame(frame);
 	</script>
 </body>
 </html>
